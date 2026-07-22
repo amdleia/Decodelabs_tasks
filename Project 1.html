@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberPass// Password Checker</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(18, 26, 43, 0.75);
+      --text: #e2e8f0;
+      --accent: #38bdf8;
+      --weak: #ff4757;
+      --medium: #ffa502;
+      --strong: #2ed573;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(46, 213, 115, 0.08) 0px, transparent 50%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
+                  0 0 30px rgba(56, 189, 248, 0.05);
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    .header {
+      margin-bottom: 1.75rem;
+    }
+
+    .header h2 {
+      font-size: 1.4rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #fff;
+    }
+
+    .header p {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 0.2rem;
+    }
+
+    .field {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.6rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #94a3b8;
+    }
+
+    .input-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-container input {
+      width: 100%;
+      padding: 0.9rem 3rem 0.9rem 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+      color: #fff;
+      outline: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .input-container input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+    }
+
+    /* Eye Toggle Icon Button */
+    .toggle-btn {
+      position: absolute;
+      right: 0.85rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .toggle-btn:hover {
+      color: var(--accent);
+      transform: scale(1.1);
+    }
+
+    .toggle-btn svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    /* Meter */
+    .meter-segments {
+      display: flex;
+      gap: 6px;
+      margin-top: 0.85rem;
+    }
+
+    .segment {
+      height: 6px;
+      flex: 1;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      transition: all 0.3s ease;
+    }
+
+    .status-text {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-top: 0.75rem;
+      letter-spacing: 0.5px;
+      min-height: 1.2em;
+      transition: color 0.3s;
+    }
+
+    /* Cyber Checklist */
+    .checklist {
+      list-style: none;
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .checklist li {
+      font-size: 0.85rem;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      transition: all 0.3s ease;
+    }
+
+    .badge {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    /* Requirement Statuses */
+    .checklist li.valid {
+      color: #e2e8f0;
+    }
+
+    .checklist li.valid .badge {
+      background: var(--strong);
+      border-color: var(--strong);
+      color: #000;
+      box-shadow: 0 0 8px rgba(46, 213, 115, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="header">
+      <h2>🛡️ CyberPass</h2>
+      <p>Analyze password in real-time</p>
+    </div>
+    
+    <div class="field">
+      <label for="password">Security Passkey</label>
+      
+      <div class="input-container">
+        <input type="password" id="password" placeholder="Enter key sequence..." autocomplete="off" spellcheck="false">
+        <button type="button" id="toggleBtn" class="toggle-btn" aria-label="Toggle Passkey Visibility">
+          <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.573 16.49 16.638 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+      </div>
+      
+      <!--Cyber Meter -->
+      <div class="meter-segments">
+        <div class="segment" id="seg1"></div>
+        <div class="segment" id="seg2"></div>
+        <div class="segment" id="seg3"></div>
+      </div>
+
+      <div id="statusText" class="status-text" style="color: #64748b;">SYSTEM IDLE</div>
+    </div>
+
+    <!--Requirement Checklist -->
+    <ul class="checklist">
+      <li id="ruleLength"><span class="badge"></span> Minimum 8 characters</li>
+      <li id="ruleUpper"><span class="badge"></span> Uppercase letter (A-Z)</li>
+      <li id="ruleNumber"><span class="badge"></span> Numeric character (0-9)</li>
+      <li id="ruleSymbol"><span class="badge"></span> Symbol (!@#$%^&*)</li>
+    </ul>
+  </div>
+
+  <script>
+    const passwordInput = document.getElementById('password');
+    const toggleBtn = document.getElementById('toggleBtn');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const statusText = document.getElementById('statusText');
+
+    // Meter segments
+    const segs = [
+      document.getElementById('seg1'),
+      document.getElementById('seg2'),
+      document.getElementById('seg3')
+    ];
+
+    // Checklist rules
+    const rules = {
+      length: document.getElementById('ruleLength'),
+      upper: document.getElementById('ruleUpper'),
+      number: document.getElementById('ruleNumber'),
+      symbol: document.getElementById('ruleSymbol')
+    };
+
+    // SVG icons for Eye and Eye Off
+    const eyeOpenPath = `
+      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.573 16.49 16.638 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    `;
+    
+    const eyeClosedPath = `
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+    `;
+
+    // Eye Toggle
+    toggleBtn.addEventListener('click', () => {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      eyeIcon.innerHTML = isPassword ? eyeClosedPath : eyeOpenPath;
+    });
+
+    // Password Evaluation
+    passwordInput.addEventListener('input', () => {
+      const val = passwordInput.value;
+
+      // Rule Evaluations
+      const hasLength = val.length >= 8;
+      const hasUpper = /[A-Z]/.test(val);
+      const hasNumber = /[0-9]/.test(val);
+      const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(val);
+
+      // UI Rule Updates
+      updateRule(rules.length, hasLength);
+      updateRule(rules.upper, hasUpper);
+      updateRule(rules.number, hasNumber);
+      updateRule(rules.symbol, hasSymbol);
+
+      const score = [hasLength, hasUpper, hasNumber, hasSymbol].filter(Boolean).length;
+
+      // Visual Meter Reset
+      segs.forEach(s => {
+        s.style.background = 'rgba(255, 255, 255, 0.1)';
+        s.style.boxShadow = 'none';
+      });
+
+      if (val.length === 0) {
+        statusText.textContent = 'SYSTEM IDLE';
+        statusText.style.color = '#64748b';
+      } else if (!hasLength || score <= 2) {
+        // Weak State
+        setSegment(0, 'var(--weak)');
+        statusText.textContent = 'STATUS: WEAK:HIGH RISK';
+        statusText.style.color = 'var(--weak)';
+      } else if (score === 3) {
+        // Medium State
+        setSegment(0, 'var(--medium)');
+        setSegment(1, 'var(--medium)');
+        statusText.textContent = 'STATUS: MODERATE:ACCEPTABLE';
+        statusText.style.color = 'var(--medium)';
+      } else {
+        // Strong State
+        setSegment(0, 'var(--strong)');
+        setSegment(1, 'var(--strong)');
+        setSegment(2, 'var(--strong)');
+        statusText.textContent = 'STATUS:STRONG:PERFECT';
+        statusText.style.color = 'var(--strong)';
+      }
+    });
+
+    function updateRule(element, isValid) {
+      const badge = element.querySelector('.badge');
+      if (isValid) {
+        element.classList.add('valid');
+        badge.textContent = '✓';
+      } else {
+        element.classList.remove('valid');
+        badge.textContent = '✕';
+      }
+    }
+
+    function setSegment(index, color) {
+      segs[index].style.background = color;
+      segs[index].style.boxShadow = `0 0 10px ${color}`;
+    }
+  </script>
+</body>
+</html>
